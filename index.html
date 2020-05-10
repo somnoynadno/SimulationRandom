@@ -38,7 +38,7 @@
             </div>
           </div>
           <div class="col text-center mt-4">
-            <button class="btn btn-success" id="start">Начать</button>
+            <button class="btn btn-success mb-4" id="start">Начать</button>
           </div>
         </div>
         <div class="col col-xs-12 p-2">
@@ -47,6 +47,51 @@
               <h6 id="variance" class="col col-auto"></h6>
               <h6 id="average" class="col col-auto"></h6>
               <h6 id="chi-square" class="col col-auto"></h6>
+            </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col col-xs-12">
+          <h1> Лаба №12 и №13 </h1>
+          <div class="row mt-2">
+            <div class="col">
+              <h5 class="mt-1">Количество экспериментов</h5>
+            </div>
+            <div class="col">
+              <input type="text" class="form-control" id="puasson-attempts-number" />
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col">
+              <h5 class="mt-1">Интенсивность</h5>
+            </div>
+            <div class="col">
+              <input type="text" class="form-control" id="puasson-intensity" />
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col">
+              <h5 class="mt-1">Диапазон</h5>
+            </div>
+            <div class="col">
+              <input type="text" class="form-control" id="puasson-range" />
+            </div>
+          </div>
+          <div class="col text-center mt-4 mb-2">
+            <button class="btn btn-success" id="puasson-start">Начать</button>
+          </div>
+          <span class="text-secondary text-center"><i>
+            Если на параметрах начинают вылетать NaN,
+            то нужно ставить либо больший диапазон,
+            либо меньшую интенсивность
+            </i></span>
+        </div>
+        <div class="col col-xs-12 p-2">
+            <div class="row" style="min-height: 300px;" id="puasson-graph"></div>
+            <div class="row">
+              <h6 id="puasson-variance" class="col col-auto"></h6>
+              <h6 id="puasson-average" class="col col-auto"></h6>
+              <h6 id="puasson-chi-square" class="col col-auto"></h6>
             </div>
         </div>
       </div>

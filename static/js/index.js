@@ -5,6 +5,14 @@ google.charts.load('current', {packages: ['corechart']});
 // python-like
 let zip = (...rows) => [...rows[0]].map((_,c) => rows.map(row => row[c]));
 
+// simple factorial function
+function factorial(num) {
+    var rval=1;
+    for (var i = 2; i <= num; i++)
+        rval = rval * i;
+    return rval;
+}
+
 // chi-sqeare table
 var criticalValues = {
   1:  3.841,
@@ -16,7 +24,17 @@ var criticalValues = {
   7:  14.067,
   8:  15.507,
   9:  16.919,
-  10: 18.301
+  10: 18.301,
+  11: 19.657,
+  12: 21.026,
+  13: 22.362,
+  14: 23.658,
+  15: 24.996,
+  16: 26.269,
+  17: 27.587,
+  18: 28.869,
+  19: 30.144,
+  20: 31.410
 }
 
 function getRandomInt(max) {
@@ -83,11 +101,11 @@ class Simulator {
       this._extractLabels();
       this._extractN();
 
-      this._countDistributionParameters();
+      this._calculateDistributionParameters();
 
       this._simulateEvents();
-      this._countExactProbs();
-      this._countExactDistributionParameters();
+      this._calculateExactProbs();
+      this._calculateExactDistributionParameters();
 
       this._appendProbsToLabels();
       this._setResultValues();
@@ -112,13 +130,13 @@ class Simulator {
     }
   }
 
-  _countExactProbs() {
+  _calculateExactProbs() {
     for (let i = 0; i < this.events.length; i++) {
       this.exactProbs.push(this.events[i]/this.N);
     }
   }
 
-  _countDistributionParameters() {
+  _calculateDistributionParameters() {
     for (let i = 0; i < this.probs.length; i++) {
       this.E += this.labels[i] * this.probs[i];
     }
@@ -128,7 +146,7 @@ class Simulator {
     }
   }
 
-  _countExactDistributionParameters() {
+  _calculateExactDistributionParameters() {
     for (let i = 0; i < this.exactProbs.length; i++) {
       this.exactE += this.labels[i] * this.exactProbs[i];
     }
@@ -234,20 +252,177 @@ class Simulator {
   }
 }
 
-function getMainAnswer() {
-  let ans;
+class Puasson {
+  constructor() {
+    this.L = 0;
+    this.N = 0;
+    this.range = 0;
+    this.results = [];
+    this.puassonResults = [];
 
-  if (db.next() % 2 == 1) {
-    ans = "Да";
+    this.E = 0;
+    this.D = 0;
+    this.chi = 0;
+    this.exactE = 0;
+    this.exactD = 0;
+    this.labels = [];
   }
-  else ans = "Нет";
 
-  $("#main-question-answer").html(ans);
+  start() {
+    this._cleanup();
+    this._extractParameters();
+
+    this._simulateEvents();
+    this._simulateRealPuasson();
+
+    this._calculateDistributionParameters();
+    this._calculateExactDistributionParameters();
+
+    this._setResultValues();
+    this._drawResult();
+  }
+
+  _simulateRealPuasson() {
+    for (let m = 0; m < this.range; m++) {
+      let v = (Math.pow((this.L), m)/factorial(m))*Math.pow(2.7182818284, -this.L);
+      this.puassonResults.push(v);
+    }
+  }
+
+  _simulateEvents() {
+    // init array
+    for (let i = 0; i < this.range; i++) {
+      this.results.push(0);
+    }
+
+    for (let i = 0; i < this.N; i++) {
+      let s = 0;
+      let m = -1;
+
+      while (s > -this.L) {
+        m++;
+        let rand = (db.next() % 10000) / 10000;
+        s += Math.log(rand);
+      }
+      try {
+        this.results[m]++;
+      } catch (e) {
+        console.log("Out of range");
+        continue;
+      }
+    }
+
+    for (let i = 0; i < this.results.length; i++) {
+      this.results[i] /= this.N;
+    }
+  }
+
+  _calculateDistributionParameters() {
+    for (let i = 0; i < this.puassonResults.length; i++) {
+      this.E += this.labels[i] * this.puassonResults[i];
+    }
+
+    for (let i = 0; i < this.puassonResults.length; i++) {
+      this.D += this.puassonResults[i] * (this.labels[i] - this.E) * (this.labels[i] - this.E);
+    }
+  }
+
+  _calculateExactDistributionParameters() {
+    for (let i = 0; i < this.results.length; i++) {
+      this.exactE += this.labels[i] * this.results[i];
+    }
+
+    for (let i = 0; i < this.results.length; i++) {
+      this.exactD += this.results[i] * (this.labels[i] - this.exactE) * (this.labels[i] - this.exactE);
+    }
+
+    for (let i = 0; i < this.results.length; i++) {
+      this.chi += (this.results[i]*this.results[i]*this.N*this.N)/(this.N*this.puassonResults[i]);
+    }
+    this.chi -= this.N;
+  }
+
+  _setResultValues() {
+    let dD = Math.abs(this.exactD - this.D) / Math.abs(this.D);
+    let dE = Math.abs(this.exactE - this.E) / Math.abs(this.E);
+
+    let text = "";
+    if (this.chi < criticalValues[this.range]) {
+      text = this.chi.toFixed(3) + " &lt; " + criticalValues[this.range] + ' (\<span class="text-success">не отклоняется</span>)';
+    } else {
+      text = this.chi.toFixed(3) + " &gt; " + criticalValues[this.range] + ' (<span class="text-danger">не принимается</span>)';
+    }
+
+    $("#puasson-average").html("Матожидание: " + this.E.toFixed(3) + " (погрешность " + (dE*100).toFixed(1) + "%)");
+    $("#puasson-variance").html("Дисперсия: " + this.D.toFixed(3) + " (погрешность " + (dD*100).toFixed(1) + "%)");
+    $("#puasson-chi-square").html("Хи-квадрат: " + text);
+  }
+
+  _drawResult() {
+    let data = new google.visualization.DataTable();
+
+    data.addColumn('string', 'Событие');
+    data.addColumn('number', 'Реальная вероятность');
+    data.addColumn('number', 'Ожидаемая вероятность');
+
+    for (let i = 0; i < this.range; i++) this.labels[i] = this.labels[i].toString();
+
+    data.addRows(zip(this.labels, this.results, this.puassonResults));
+
+    let options = {'title':'Визуализация'};
+    let chart = new google.visualization.LineChart(document.getElementById('puasson-graph'));
+
+    chart.draw(data, options);
+  }
+
+  _extractParameters() {
+    this.L = parseFloat(document.getElementById('puasson-intensity').value);
+    this.N = parseInt(document.getElementById('puasson-attempts-number').value);
+    this.range = parseInt(document.getElementById('puasson-range').value);
+
+    if (isNaN(this.L)) {
+      this._panic("Invalid intensity parameter");
+    }
+    if (isNaN(this.N)) {
+      this._panic("Invalid number of attempts");
+    }
+    if (isNaN(this.range)) {
+      this._panic("Invalid range");
+    }
+    if (this.range > 20) {
+      alert("Range should be <= 20 to count chi-square correctly")
+    }
+
+    for (let i = 0; i < this.range; i++) this.labels.push((i));
+  }
+
+  _panic(msg) {
+    alert(msg);
+    this._cleanup();
+  }
+
+  _cleanup() {
+    this.L = 0;
+    this.N = 0;
+    this.range = 0;
+    this.results = [];
+    this.puassonResults = [];
+
+    this.E = 0;
+    this.D = 0;
+    this.chi = 0;
+    this.exactE = 0;
+    this.exactD = 0;
+    this.labels = [];
+  }
 }
 
 function main() {
     $('#attempts-number').val(100);
-    $('#main-question-button').click(getMainAnswer);
+
+    $('#puasson-range').val(20);
+    $('#puasson-attempts-number').val(100);
+    $('#puasson-intensity').val(2);
 
     let sim = new Simulator();
 
@@ -255,6 +430,10 @@ function main() {
     $('#delete-row').click(() => {sim.deleteRow()});
 
     $('#start').click(() => {sim.start()});
+
+    let puasson = new Puasson();
+
+    $('#puasson-start').click(() => puasson.start());
 }
 
 
