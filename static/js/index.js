@@ -417,12 +417,96 @@ class Puasson {
   }
 }
 
+class Gauss {
+  constructor() {
+    this.E = 0;
+    this.D = 0;
+    this.N = 0;
+    this.rangeLen = 0;
+
+    this.X = [];
+    this.Y = [];
+  }
+
+  start() {
+    this._cleanup();
+    this._extractParameters();
+
+    this._simulateEvents();
+    this._drawResult();
+  }
+
+  _simulateEvents() {
+    for (let i = 0; i < this.N; i++) {
+      let rand = (Math.random() - 0.5)*this.rangeLen;
+      let e = (1/(Math.sqrt(2*Math.PI)))*Math.pow(Math.E, (-rand*rand)/2);
+      e = this.E + this.D*e;
+      this.Y.push(e);
+      this.X.push(rand);
+    }
+  }
+
+  _extractParameters() {
+    this.E = parseFloat(document.getElementById('gauss-average').value);
+    this.D = parseInt(document.getElementById('gauss-variance').value);
+    this.N = parseInt(document.getElementById('gauss-n').value);
+    this.rangeLen = parseInt(document.getElementById('gauss-range-len').value);
+
+    if (isNaN(this.E)) {
+      this._panic("Invalid average parameter");
+    }
+    if (isNaN(this.D)) {
+      this._panic("Invalid variance");
+    }
+    if (isNaN(this.N)) {
+      this._panic("Invalid number of attempts");
+    }
+    if (isNaN(this.rangeLen)) {
+      this._panic("Invalid range");
+    }
+  }
+
+  _drawResult() {
+    let data = new google.visualization.DataTable();
+
+    data.addColumn('number', 'X');
+    data.addColumn('number', 'Y');
+
+    data.addRows(zip(this.X, this.Y));
+
+    let options = {'title':'Визуализация'};
+    let chart = new google.visualization.ScatterChart(document.getElementById('gauss-graph'));
+
+    chart.draw(data, options);
+  }
+
+  _panic(msg) {
+    alert(msg);
+    this._cleanup();
+  }
+
+  _cleanup() {
+    this.E = 0;
+    this.D = 0;
+    this.N = 0;
+    this.rangeLen = 0;
+
+    this.X = [];
+    this.Y = [];
+  }
+}
+
 function main() {
     $('#attempts-number').val(100);
 
     $('#puasson-range').val(20);
     $('#puasson-attempts-number').val(100);
     $('#puasson-intensity').val(2);
+
+    $('#gauss-range-len').val(10);
+    $('#gauss-average').val(0);
+    $('#gauss-variance').val(1);
+    $('#gauss-n').val(100);
 
     let sim = new Simulator();
 
@@ -434,6 +518,10 @@ function main() {
     let puasson = new Puasson();
 
     $('#puasson-start').click(() => puasson.start());
+
+    let gauss = new Gauss();
+
+    $('#gauss-start').click(() => gauss.start());
 }
 
 

@@ -50,6 +50,7 @@
             </div>
         </div>
       </div>
+      <hr>
       <div class="row">
         <div class="col col-xs-12">
           <h1> Лаба №12 и №13 </h1>
@@ -93,6 +94,53 @@
               <h6 id="puasson-average" class="col col-auto"></h6>
               <h6 id="puasson-chi-square" class="col col-auto"></h6>
             </div>
+        </div>
+      </div>
+      <hr>
+      <div class="row">
+        <div class="col col-xs-12">
+          <h1> Лаба №14 </h1>
+          <div class="row mt-2">
+            <div class="col">
+              <h5 class="mt-1">Матожидание</h5>
+            </div>
+            <div class="col">
+              <input type="text" class="form-control" id="gauss-average" />
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col">
+              <h5 class="mt-1">Дисперсия</h5>
+            </div>
+            <div class="col">
+              <input type="text" class="form-control" id="gauss-variance" />
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col">
+              <h5 class="mt-1">Длина промежутка</h5>
+            </div>
+            <div class="col">
+              <input type="text" class="form-control" id="gauss-range-len" />
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col">
+              <h5 class="mt-1">Кол-во испытаний</h5>
+            </div>
+            <div class="col">
+              <input type="text" class="form-control" id="gauss-n" />
+            </div>
+          </div>
+          <div class="col text-center mt-4 mb-2">
+            <button class="btn btn-success" id="gauss-start">Начать</button>
+          </div>
+          <span class="text-secondary text-center"><i>
+            На большом интервале может сдохнуть
+            </i></span>
+        </div>
+        <div class="col col-xs-12 p-2">
+            <div class="row" style="min-height: 300px;" id="gauss-graph"></div>
         </div>
       </div>
 
